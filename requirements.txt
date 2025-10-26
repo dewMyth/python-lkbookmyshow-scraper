@@ -1,0 +1,4 @@
+pymongo
+playwright
+bs4
+apscheduler

@@ -7,7 +7,7 @@ from logger import logger
 
 def scrape_movies():
     try:
-        print('Scraping Movies...')
+        logger.info('Scraping Movies...')
         movies = []
 
         url = 'https://lk.bookmyshow.com/sri-lanka/movies'

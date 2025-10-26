@@ -7,10 +7,19 @@ import pytz
 
 scheduler = BlockingScheduler(timezone=pytz.timezone('Asia/Kolkata'))  # GMT+5:30
 
+@scheduler.scheduled_job(
+    'cron',
+    hour=11,
+    minute=40,
+    timezone=pytz.timezone('Asia/Kolkata')
+)
 def start_app():
-    scrape_movies()
+    logger.info("Started Job...")
+    try:
+        scrape_movies()
+    except Exception as e:
+        logger.exception(e)
 
-scheduler.add_job(start_app, 'cron', minute='*/1')
 
 if __name__ == '__main__':
     logger.info("Scheduler starting...")

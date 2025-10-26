@@ -13,7 +13,7 @@ def scrape_movies():
         url = 'https://lk.bookmyshow.com/sri-lanka/movies'
 
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
+            browser = p.chromium.launch(headless=False)
             page = browser.new_page()
             #page.goto(url)
             #page.wait_for_selector("div.movie-card-container")

@@ -7,12 +7,12 @@ import pytz
 
 scheduler = BlockingScheduler(timezone=pytz.timezone('Asia/Kolkata'))  # GMT+5:30
 
-@scheduler.scheduled_job(
-    'cron',
-    hour=11,
-    minute=40,
-    timezone=pytz.timezone('Asia/Kolkata')
-)
+# @scheduler.scheduled_job(
+#     'cron',
+#     hour=11,
+#     minute=29,
+#     timezone=pytz.timezone('Asia/Kolkata')
+# )
 def start_app():
     logger.info("Started Job...")
     try:
@@ -23,6 +23,7 @@ def start_app():
 
 if __name__ == '__main__':
     logger.info("Scheduler starting...")
-    scheduler.start()
+    start_app()
+    #scheduler.start()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

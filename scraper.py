@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, Error
 from db import find, save_data
 from logger import logger
 
@@ -15,8 +15,27 @@ def scrape_movies():
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
             page = browser.new_page()
-            page.goto(url)
-            page.wait_for_selector("div.movie-card-container")
+            #page.goto(url)
+            #page.wait_for_selector("div.movie-card-container")
+
+            try:
+                response = page.goto(url, timeout=10000)
+
+                if response is None:
+                    logger.error(f"Navigation failed: No response received. Possible network issue for URL: {url}")
+                elif response.status >= 400:
+                    logger.error(f"HTTP Error {response.status} for URL: {url}")
+                else:
+                    try:
+                        page.wait_for_selector("div.movie-card-container", timeout=10000)
+                        logger.info("Page loaded and selector found successfully.")
+                    except TimeoutError:
+                        logger.error(f"Selector not found on page within timeout for URL: {url}")
+
+            except Error as e:  # Playwright network or navigation errors
+                logger.error(f"Network or navigation error occurred: {e}")
+            except Exception as e:  # Catch-all for any other unexpected errors
+                logger.error(f"Unexpected error: {e}")
 
             soup = BeautifulSoup(page.content(), "html.parser")
 

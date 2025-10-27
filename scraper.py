@@ -2,10 +2,12 @@ from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright, Error
 from db import find, save_data
 from logger import logger
+from emailer import send_email
 
+base_url = 'https://www.scopecinemas.com'
 
 def scrape_movie_details(page, movie_url):
-    base_url = 'https://www.scopecinemas.com'
+
     page.goto(base_url + movie_url)
     html = page.content()
     soup = BeautifulSoup(html, "html.parser")
@@ -79,8 +81,8 @@ def scrape_movies():
                     # Append to movies list
                     movies.append({
                         "name": title,
-                        "link": info_link,
-                        "buy_link": buy_link,
+                        "link": base_url + info_link,
+                        "buy_link": base_url + buy_link,
                         "image": img,
                         "description": description,
                         "genre": genre,
@@ -94,6 +96,7 @@ def scrape_movies():
             if movies is not None and len(movies) > 0:
                 logger.info(f"Saving Movie - {len(movies)} Movies...")
                 save_data(movies)
+                send_email(movies)
             else:
                 logger.info("No new Movies found.")
 

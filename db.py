@@ -4,13 +4,18 @@ from logger import logger
 import os
 
 
-def get_db():
+
+def get_db(*args):
     try:
         logger.info('Attempting to connect to MongoDB...')
 
-        client = MongoClient("mongodb+srv://dewmyth:Lso4hb6eYDc1APjB@cluster0.nvij6jq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+        client = MongoClient(os.getenv("MONGO_URI"))
+
         db = client["test"]
-        collection = db["movies"]
+        if len(args) == 1:
+            collection = db[args[0]]
+        else:
+            collection = db["movies"]
 
         # Test connection with a simple ping
         client.admin.command("ping")
@@ -54,3 +59,17 @@ def save_data(data):
 
     except Exception as e:
         logger.exception(f"Failed to save data: {e}")
+
+
+def get_emails():
+    collection = get_db("emails")
+    try:
+        result = list(collection.find({}))
+        if result is not None:
+            logger.info(f"Found {len(result)} emails.")
+            return result
+        else:
+            return None
+    except errors.OperationFailure as e:
+        logger.exception(f"MongoDB operation failed: {e}")
+

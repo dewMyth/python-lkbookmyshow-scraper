@@ -3,3 +3,5 @@ playwright
 bs4
 apscheduler
 pytz
+jinja2
+python-dotenv

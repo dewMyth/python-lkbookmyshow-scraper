@@ -3,6 +3,10 @@ from logger import logger
 from scraper import scrape_movies
 from apscheduler.schedulers.blocking import BlockingScheduler
 import pytz
+from dotenv import load_dotenv
+
+# Load variables from .env file
+load_dotenv()
 
 
 scheduler = BlockingScheduler(timezone=pytz.timezone('Asia/Kolkata'))  # GMT+5:30

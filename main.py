@@ -17,6 +17,9 @@ scheduler = BlockingScheduler(timezone=pytz.timezone('Asia/Kolkata'))  # GMT+5:3
 #     minute=29,
 #     timezone=pytz.timezone('Asia/Kolkata')
 # )
+
+# Run every hour
+@scheduler.scheduled_job('interval', hours=1)
 def start_app():
     logger.info("Started Job...")
     try:
@@ -27,7 +30,7 @@ def start_app():
 
 if __name__ == '__main__':
     logger.info("Scheduler starting...")
-    start_app()
-    #scheduler.start()
+    #start_app()
+    scheduler.start()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

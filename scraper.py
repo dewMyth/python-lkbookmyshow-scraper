@@ -10,16 +10,21 @@ def scrape_movies():
         logger.info('Scraping Movies...')
         movies = []
 
-        url = 'https://lk.bookmyshow.com/sri-lanka/movies'
+
+        url = 'http://www.scopecinemas.com/movies'
+        #url = 'https://lk.bookmyshow.com/movies'
 
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=False)
+            browser = p.chromium.launch(headless=True)
+
             page = browser.new_page()
+
             #page.goto(url)
             #page.wait_for_selector("div.movie-card-container")
 
+
             try:
-                response = page.goto(url, timeout=10000)
+                response = page.goto(url, timeout=120000)
 
                 if response is None:
                     logger.error(f"Navigation failed: No response received. Possible network issue for URL: {url}")
@@ -40,33 +45,27 @@ def scrape_movies():
             soup = BeautifulSoup(page.content(), "html.parser")
 
             # Select all movie card containers
-            movie_cards = soup.select("div.movie-card-container")
+            movie_cards = movie_divs = soup.select("div.col-xl-3.col-lg-3.col-md-3.first")
 
             # Get Already Added movies
             movies_added = find()
 
             for card in movie_cards:
                 # Extract movie title
-                title = card.get("data-title")
+                try:
+                    title = card.select_one(".movie-name").get_text(strip=True)
+                    img = card.select_one("img.img-fluid")["src"]
+                    info_link = card.select_one("a.single-page-main-link")["href"]
+                    buy_link = card.select_one("a.buy-tickets")["href"]
 
-                # Extract link
-                link_tag = card.find("a", href=True)
-                link = f"https://lk.bookmyshow.com{link_tag['href']}" if link_tag else None
-
-                # Extract image
-                img_tag = card.find("img", {"class": "__poster"})
-                img_src = img_tag.get("data-src") or img_tag.get("src") if img_tag else None
-                if img_src and img_src.startswith("//"):
-                    img_src = "https:" + img_src
-
-                # Extract languages, genres, and dimensions from data attributes
-                language_filter = card.get("data-language-filter", "")
-                genre_filter = card.get("data-genre-filter", "")
-                dimension_filter = card.get("data-dimension-filter", "")
-
-                languages = [x for x in language_filter.split("|") if x]
-                genres = [x for x in genre_filter.split("|") if x]
-                dimensions = [x for x in dimension_filter.split("|") if x]
+                    movies.append({
+                        "name": title,
+                        "image": img,
+                        "info_link": info_link,
+                        "buy_link": buy_link
+                    })
+                except Exception as e:
+                    print("Error parsing movie:", e)
 
                 added_titles = [added_movie["title"] for added_movie in movies_added]
 
@@ -75,11 +74,9 @@ def scrape_movies():
                     # Append to movies list
                     movies.append({
                         "title": title,
-                        "link": link,
-                        "languages": languages,
-                        "genres": genres,
-                        "dimensions": dimensions,
-                        "image": img_src
+                        "link": info_link,
+                        "buy_link": buy_link,
+                        "image": img
                     })
                 else:
                     logger.info(f"Movie {title} already exists.")

@@ -4,6 +4,20 @@ from db import find, save_data
 from logger import logger
 
 
+def scrape_movie_details(page, movie_url):
+    base_url = 'https://www.scopecinemas.com'
+    page.goto(base_url + movie_url)
+    html = page.content()
+    soup = BeautifulSoup(html, "html.parser")
+
+    description_tag = soup.select_one("p.movie-des")
+    genre_tag = soup.select_one("div.genres-div .genres-item")
+
+    description = description_tag.text.strip() if description_tag else None
+    genre = genre_tag.text.strip() if genre_tag else None
+
+    return description, genre
+
 
 def scrape_movies():
     try:
@@ -12,16 +26,11 @@ def scrape_movies():
 
 
         url = 'http://www.scopecinemas.com/movies'
-        #url = 'https://lk.bookmyshow.com/movies'
 
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
 
             page = browser.new_page()
-
-            #page.goto(url)
-            #page.wait_for_selector("div.movie-card-container")
-
 
             try:
                 response = page.goto(url, timeout=120000)
@@ -45,7 +54,7 @@ def scrape_movies():
             soup = BeautifulSoup(page.content(), "html.parser")
 
             # Select all movie card containers
-            movie_cards = movie_divs = soup.select("div.col-xl-3.col-lg-3.col-md-3.first")
+            movie_cards = soup.select("div.row.movie-deatil-row > div.col-xl-3")
 
             # Get Already Added movies
             movies_added = find()
@@ -58,25 +67,23 @@ def scrape_movies():
                     info_link = card.select_one("a.single-page-main-link")["href"]
                     buy_link = card.select_one("a.buy-tickets")["href"]
 
-                    movies.append({
-                        "name": title,
-                        "image": img,
-                        "info_link": info_link,
-                        "buy_link": buy_link
-                    })
+
                 except Exception as e:
                     print("Error parsing movie:", e)
 
-                added_titles = [added_movie["title"] for added_movie in movies_added]
+                added_titles = [added_movie["name"] for added_movie in movies_added]
 
                 if title not in added_titles:
                     logger.info(f"Adding New Movie - {title}...")
+                    description, genre = scrape_movie_details(page, info_link)
                     # Append to movies list
                     movies.append({
-                        "title": title,
+                        "name": title,
                         "link": info_link,
                         "buy_link": buy_link,
-                        "image": img
+                        "image": img,
+                        "description": description,
+                        "genre": genre,
                     })
                 else:
                     logger.info(f"Movie {title} already exists.")
@@ -93,5 +100,5 @@ def scrape_movies():
             return movies
 
     except Exception as error:
-        print(f"❌ Error scraping movies: {error}")
+        print(f"Error scraping movies: {error}")
         return []

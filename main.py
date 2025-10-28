@@ -19,7 +19,7 @@ scheduler = BlockingScheduler(timezone=pytz.timezone('Asia/Kolkata'))  # GMT+5:3
 # )
 
 # Run every hour
-@scheduler.scheduled_job('interval', minutes=1)
+@scheduler.scheduled_job('interval', minutes=5)
 def start_app():
     logger.info("Started Job...")
     try:

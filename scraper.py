@@ -43,7 +43,7 @@ def scrape_movies():
                     logger.error(f"HTTP Error {response.status} for URL: {url}")
                 else:
                     try:
-                        page.wait_for_selector("div.movie-card-container", timeout=10000)
+                        page.wait_for_selector("div.movie-card-container", timeout=120000)
                         logger.info("Page loaded and selector found successfully.")
                     except TimeoutError:
                         logger.error(f"Selector not found on page within timeout for URL: {url}")

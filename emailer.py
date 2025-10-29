@@ -1,10 +1,11 @@
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from jinja2 import Template
 from db import get_emails
 from logger import logger
 import os
+import resend
+
+
+SENDPULSE_API_URL = "https://api.sendpulse.com"
 
 
 def generate_html_content(movies):
@@ -138,34 +139,28 @@ def generate_html_content(movies):
 def get_recipients():
     emails_list = get_emails()
     emails_list_str = [email_user["email"] for email_user in emails_list]
-    return ",".join(emails_list_str)
+    return emails_list_str
+
 
 def send_email(movies):
-    # Email account credentials
-    sender_email = "dewmyth.dev@gmail.com"
-    sender_password = os.getenv("EMAIL_APP_PW") # Not your Gmail password — use an App Password
-    receiver_email = get_recipients()
+    resend.api_key = os.getenv("RESEND_API_KEY")
 
-    # Create the email
-    message = MIMEMultipart("alternative")
-    message["Subject"] = "New movies | Now Showing at Scope Cinemas"
-    message["From"] = sender_email
-    message["To"] = receiver_email
+    recipients = get_recipients()
 
-    # Email body
-    html = generate_html_content(movies)
-
-    content = MIMEText(html, "html")
-    message.attach(content)
-
-    # Send email using Gmail SMTP server
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(sender_email, sender_password)
-            server.sendmail(sender_email, receiver_email, message.as_string())
-            logger.info(f"Email sent successfully! To - {receiver_email} !")
+        r = resend.Emails.send({
+            "from": "New Movie Notifer <onboarding@resend.dev>",
+            "to": recipients,
+            "subject": "Now Showing at Scope Cinemas",
+            "html": generate_html_content(movies),
+        })
+        logger.info(f"Email sent to {recipients}")
     except Exception as e:
-        logger.error("Error:", e)
+        logger.error(f"Error sending email: {e}")
+
+
+
+
 
 
 

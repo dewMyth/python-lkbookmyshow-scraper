@@ -1,4 +1,5 @@
 # This is a sample Python script.
+from emailer import send_email
 from logger import logger
 from scraper import scrape_movies
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -30,7 +31,6 @@ def start_app():
 
 if __name__ == '__main__':
     logger.info("Scheduler starting...")
-    #start_app()
+    # start_app()
     scheduler.start()
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/

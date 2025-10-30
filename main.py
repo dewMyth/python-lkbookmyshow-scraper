@@ -12,13 +12,6 @@ load_dotenv()
 
 scheduler = BlockingScheduler(timezone=pytz.timezone('Asia/Kolkata'))  # GMT+5:30
 
-# @scheduler.scheduled_job(
-#     'cron',
-#     hour=11,
-#     minute=29,
-#     timezone=pytz.timezone('Asia/Kolkata')
-# )
-
 # Run every hour
 @scheduler.scheduled_job('interval', hours=1)
 def start_app():
@@ -31,6 +24,5 @@ def start_app():
 
 if __name__ == '__main__':
     logger.info("Scheduler starting...")
-    # start_app()
     scheduler.start()
 
